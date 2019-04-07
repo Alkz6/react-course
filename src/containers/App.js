@@ -21,6 +21,9 @@ class App extends Component {
   }
 
   static getDerivedStateFromProps(props, state){
+    // será invocado después que el componente sea instanciado y también cada vez que el componente reciba nuevas props.
+    // Utilizan sus parámetros con las nuevas props y el state anterior, 
+    //debe devolver un objeto con el state actualizado o null para indicar que no requiere ninguna actualización su state. 
     console.log('[App.js] getDerivedStateFromProps', props)
     return state;
   }
@@ -30,15 +33,22 @@ class App extends Component {
   // }
 
   componentDidMount(){
+    //Este método solo se ejecuta justo después de que el componente haya sido montado en el DOM. 
+    //Es el método perfecto para integrar librerias de terceros (plugins jquery), realizar alguna petición ajax ó 
+    //establecer algún timer de tipo setTimeout ó setInterval.
     console.log('[App.js] componentDidMount');
   }
 
   shouldComponentUpdate(nextProps, nextState){
+    //Con este método podremos mejorar nuestra performance. Por defecto, siempre retorna true.
+    //Si hacemos que retorne false, cancelariamos el render hasta un nuevo cambio de propiedades o de estado
     console.log('[App.js] shouldComponentUpdate');
     return true;
   }
 
   componentDidUpdate(){
+    //Es invocado inmediatamente después de que el componente se haya actualizado.
+    //Aquí es donde podemos manejar el componente ya renderizado y actualizado en el DOM.
     console.log('[App.js] componentDidUpdate');
   }
 
@@ -51,7 +61,8 @@ class App extends Component {
         { name: newName, age: 28 , hobbies: 'Learning languages'},
         { name: newName, age: 26 }
       ],
-      showPersons: false
+      showPersons: false,
+      showCockpit: true,
     });
   };
 
@@ -103,12 +114,13 @@ class App extends Component {
     return (
       <div className={classes.App}>
         <header className={classes.App2}>
-        <Cockpit
+        <button onClick={()=>{this.setState({showCockpit: !this.state.showCockpit})}}>Remove Cockpit</button>
+        {this.state.showCockpit ? <Cockpit
           title={this.props.appTitle}
           showPersons={this.state.showPersons}
-          persons={this.state.persons}
+          personsLength={this.state.persons.length}
           clicked={this.togglePersonHandler}
-        />
+        />: null }
          {persons}
         </header>
       </div>
