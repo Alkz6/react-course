@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
+
 import classes from './App.css';
 //import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary';
 import Persons from '../components/Persons/Persons';
 import Cockpit from '../components/Cockpit/Cockpit';
+//import WithClass from '../hoc/WithClass'; //IF IT IS A COMPONENT IT WILL BEGIN WITH A CAPITAL LETTER
+import withClass from '../hoc/withClass'; // IF IT IS A FUNCTION IT WILL BE IMPORTED AS BE NAMED
+import Aux from '../hoc/Aux';
+import AuthContext from '../context/auth-context';
 
 class App extends Component {
 
@@ -17,7 +22,11 @@ class App extends Component {
       { id: 'us21312', name: 'Kitzia', age: 28 , hobbies: 'Learning languages'},
       { id: 'ussad1', name: 'Juan', age: 26 }
     ],
-    otherState: 'some other value'
+    otherState: 'some other value',
+    showPersons: false,
+    showCockpit: true,
+    changeCounter: 0,
+    authenticated: false
   }
 
   static getDerivedStateFromProps(props, state){
@@ -77,9 +86,19 @@ class App extends Component {
 
     const persons = [...this.state.persons];
     persons[personIndex] = person;
-    this.setState({
-      persons: persons
-    })
+    //this.setState((pervState, props) => {
+    //  return {
+    //    persons: persons,
+    //    changeCounter: pervState.changeCounter + 1
+    //  }
+    //}); IT WOULD UPDATE ITS STATES BUT ISNT RECOMMENDED IF YOUR STATES DEPENDS OF THE LASTEST STATE
+
+    this.setState((prevState, props) => {
+      return {
+        persons: persons,
+        changeCounter: prevState.changeCounter + 1
+      }
+    }); // THIS IS THE RECOMMENDED WAY TO UPDATE ITS STATES IF IT DEPENDS OF YOUR LAST STATE
     // const person = Object.assing({}, this.state.persons[personIndex]);
     // console.log('Was clicked!');
     // DON'T DO THIS: this.state.persons[0].name = 'Maximilian';
@@ -99,6 +118,12 @@ class App extends Component {
     this.setState({persons: persons});
   }
 
+  loginHandler = () => {
+    this.setState({
+      authenticated: true,
+    })
+  };
+
   render() {
     console.log('[App.js] render')
     let persons = [];
@@ -108,25 +133,45 @@ class App extends Component {
             persons={this.state.persons}
             clicked={this.deletePersonHandler}
             changed={this.nameChangeHandler}
+            isAuthenticated={this.state.authenticated}
           />;
     }
 
     return (
-      <div className={classes.App}>
+      // <WithClass classes ={classes.App}>
+      //   <header className={classes.App2}>
+      //   <button onClick={()=>{this.setState({showCockpit: !this.state.showCockpit})}}>Remove Cockpit</button>
+      //   {this.state.showCockpit ? <Cockpit
+      //     title={this.props.appTitle}
+      //     showPersons={this.state.showPersons}
+      //     personsLength={this.state.persons.length}
+      //     clicked={this.togglePersonHandler}
+      //   />: null }
+      //    {persons}
+      //   </header>
+      // </WithClass>
+      <Aux>
         <header className={classes.App2}>
         <button onClick={()=>{this.setState({showCockpit: !this.state.showCockpit})}}>Remove Cockpit</button>
-        {this.state.showCockpit ? <Cockpit
-          title={this.props.appTitle}
-          showPersons={this.state.showPersons}
-          personsLength={this.state.persons.length}
-          clicked={this.togglePersonHandler}
-        />: null }
-         {persons}
+        <AuthContext.Provider 
+        value={{
+          authenticated: this.state.authenticated,
+          login: this.loginHandler
+        }} >
+          {this.state.showCockpit ? (
+            <Cockpit
+              title={this.props.appTitle}
+              showPersons={this.state.showPersons}
+              personsLength={this.state.persons.length}
+              clicked={this.togglePersonHandler}
+            />): null }
+          {persons}
+         </AuthContext.Provider>
         </header>
-      </div>
+      </Aux>
     );
     // return React.createElement('div', {className: 'App'}, React.createElement('h1', null, 'Does this work now?'));
   }
 }
 
-export default App;
+export default withClass(App, classes.App);
